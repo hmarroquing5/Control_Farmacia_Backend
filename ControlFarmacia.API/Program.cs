@@ -93,7 +93,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 // El orden aquí es CRÍTICO
 app.UseCors("AllowReactApp"); 

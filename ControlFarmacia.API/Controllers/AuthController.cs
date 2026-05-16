@@ -25,9 +25,12 @@ namespace ControlFarmacia.API.Controllers
 [HttpPost("login")]
 public async Task<IActionResult> Login([FromBody] LoginRequest request)
 {
+    var paramUser = new MySql.Data.MySqlClient.MySqlParameter("@p_Username", request.Username);
+    var paramPass = new MySql.Data.MySqlClient.MySqlParameter("@p_Password", request.Password);
+
     // 1. CAMBIADO A SINTAXIS MYSQL: CALL con paréntesis y marcadores estándar {0} y {1}
-    var user = (await _context.Usuarios
-        .FromSqlRaw("CALL sp_ValidarUsuario({0}, {1})", request.Username, request.Password)
+var user = (await _context.Usuarios
+        .FromSqlRaw("CALL sp_ValidarUsuario(@p_Username, @p_Password)", paramUser, paramPass)
         .ToListAsync())
         .FirstOrDefault();
 
