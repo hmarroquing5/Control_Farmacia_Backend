@@ -7,14 +7,26 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Configuración de la Base de Datos (SQL Server en Docker)
+// 1. Configuración de la Base de Datos (CAMBIADO A MYSQL)
 // Lee la cadena desde User Secrets o appsettings.json
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+// 1. Buscamos la cadena en las variables de entorno o configuraciones
+var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION") 
+                       ?? builder.Configuration.GetConnectionString("DB_CONNECTION") 
+                       ?? builder.Configuration["DB_CONNECTION"];
 
+// 2. Validamos que no sea nula antes de pasarla al DbContext
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new Exception("ERROR: La cadena de conexión 'DB_CONNECTION' no está configurada.");
+}
+
+// 3. SE CAMBIÓ A ApplicationDbContext (Tu clase real de Entity Framework)
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseMySQL(connectionString));
 // 2. Configuración de Seguridad JWT
-var jwtKey = builder.Configuration["Jwt:Key"];
+// Busca en las variables de entorno del contenedor/sistema primero, y si no, en la configuración normal
+var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? builder.Configuration["JWT_KEY"];
+
 if (string.IsNullOrEmpty(jwtKey) || jwtKey.Length < 32)
 {
     throw new Exception("ERROR: La clave JWT no es segura o no está configurada en los secretos.");

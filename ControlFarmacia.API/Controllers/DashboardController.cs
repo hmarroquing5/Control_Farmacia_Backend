@@ -1,5 +1,5 @@
 using Dapper;
-using Microsoft.Data.SqlClient;
+using MySql.Data.MySqlClient;
 using Microsoft.AspNetCore.Mvc;
 
 [Route("api/[controller]")]
@@ -10,22 +10,33 @@ public class DashboardController : ControllerBase
 
     public DashboardController(IConfiguration configuration)
     {
-        _connectionString = configuration.GetConnectionString("DefaultConnection");
+        // UNIFICADO CON PROGRAM.CS: Busca de forma robusta en Docker o variables de entorno
+        _connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION") 
+                            ?? configuration.GetConnectionString("DB_CONNECTION") 
+                            ?? configuration["DB_CONNECTION"] 
+                            ?? string.Empty;
     }
 
     [HttpGet("resumen")]
     public async Task<IActionResult> GetDashboardResumen()
     {
+        if (string.IsNullOrEmpty(_connectionString))
+        {
+            return StatusCode(500, new { message = "Error de configuración: Cadena de conexión no encontrada." });
+        }
+
         try
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
+                await connection.OpenAsync(); // Abrimos de forma explícita y asíncrona para MySQL
+
+                // Ejecución directa compatible y fluida para el driver de MySQL
                 using (var multi = await connection.QueryMultipleAsync(
-                    "sp_ObtenerDashboardFEFO", 
-                    commandType: System.Data.CommandType.StoredProcedure))
+                    "CALL sp_ObtenerDashboardFEFO()", // Usamos sintaxis explícita CALL
+                    commandType: System.Data.CommandType.Text)) 
                 {
                     var kpis = await multi.ReadFirstOrDefaultAsync<DashboardKpiDto>();
-
                     var lotes = (await multi.ReadAsync<LoteDashboardDto>()).ToList();
 
                     return Ok(new

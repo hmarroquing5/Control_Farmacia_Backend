@@ -25,14 +25,23 @@ namespace ControlFarmacia.API.Controllers
 [HttpPost("login")]
 public async Task<IActionResult> Login([FromBody] LoginRequest request)
 {
+    // 1. CAMBIADO A SINTAXIS MYSQL: CALL con paréntesis y marcadores estándar {0} y {1}
     var user = (await _context.Usuarios
-        .FromSqlRaw("EXEC sp_ValidarUsuario @p0, @p1", request.Username, request.Password)
+        .FromSqlRaw("CALL sp_ValidarUsuario({0}, {1})", request.Username, request.Password)
         .ToListAsync())
         .FirstOrDefault();
 
     if (user == null) return Unauthorized(new { message = "Credenciales inválidas" });
 
-    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+    // 2. CORREGIDO: Buscamos primero en el Environment (JWT_KEY) igual que en el Program.cs
+    var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? _config["JWT_KEY"] ?? _config["Jwt:Key"];
+    
+    if (string.IsNullOrEmpty(jwtKey))
+    {
+        return StatusCode(500, new { message = "Error interno: La clave JWT no está configurada en el servidor." });
+    }
+
+    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
     var token = new JwtSecurityToken(
         issuer: _config["Jwt:Issuer"],
         audience: _config["Jwt:Audience"],

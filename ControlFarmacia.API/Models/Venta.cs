@@ -9,7 +9,8 @@ namespace ControlFarmacia.API.Models
         public int VentaID { get; set; }
 
         [Required]
-        public int UsuarioID { get; set; }
+        // CAMBIADO A string PARA COINCIDIR CON EL ID DE LA CLASE USUARIO
+        public string UsuarioId { get; set; } = string.Empty; 
 
         [Required]
         public DateTime FechaVenta { get; set; } = DateTime.Now;
@@ -19,6 +20,7 @@ namespace ControlFarmacia.API.Models
         public string NumeroFactura { get; set; } = string.Empty; // Requerido para Auditoría (US 06)
 
         // Propiedades de navegación
+        [ForeignKey("UsuarioId")] // Le aclaramos explícitamente la relación a Entity Framework
         public Usuario? Usuario { get; set; }
         public ICollection<DetalleVenta> Detalles { get; set; } = new List<DetalleVenta>();
     }

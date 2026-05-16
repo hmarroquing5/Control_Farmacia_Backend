@@ -1,16 +1,21 @@
 services:
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: sqlserver_farmacia
-    ports:
-      - "1433:1433"
+  mysql_db:
+    image: mysql:8.0
+    container_name: mysql_farmacia
+    restart: always
     environment:
-      - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=${SQL_PASSWORD}
-      - MSSQL_PID=Developer
+      MYSQL_ROOT_PASSWORD: "${SQL_PASSWORD}"
+      MYSQL_DATABASE: "db_farmacia"
+    ports:
+      - "3307:3306"
     volumes:
-      - sql_data:/var/opt/mssql
-      - ./db_backups:/home/backups
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -u root || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 45s
 
   api:
     build:
@@ -19,13 +24,15 @@ services:
     container_name: api_farmacia_container
     ports:
       - "5256:80"
+    env_file:
+      - .env
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=${DB_CONNECTION}
-      - Jwt__Key=${JWT_KEY}
-      - SQL_PASSWORD=${SQL_PASSWORD}
+      ASPNETCORE_ENVIRONMENT: "${ASPNETCORE_ENVIRONMENT}"
+      DB_CONNECTION: "${DB_CONNECTION}"
+      JWT_KEY: "${JWT_KEY}"
     depends_on:
-      - sqlserver
+      mysql_db:
+        condition: service_healthy
 
 volumes:
-  sql_data:
+  mysql_data:
