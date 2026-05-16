@@ -1,0 +1,31 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver_farmacia
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${SQL_PASSWORD}
+      - MSSQL_PID=Developer
+    volumes:
+      - sql_data:/var/opt/mssql
+      - ./db_backups:/home/backups
+
+  api:
+    build:
+      context: ./ControlFarmacia.API
+      dockerfile: Dockerfile
+    container_name: api_farmacia_container
+    ports:
+      - "5256:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION}
+      - Jwt__Key=${JWT_KEY}
+      - SQL_PASSWORD=${SQL_PASSWORD}
+    depends_on:
+      - sqlserver
+
+volumes:
+  sql_data:

@@ -1,0 +1,33 @@
+# Carpetas de compilación
+**/bin/
+**/obj/
+
+# Archivos de configuración de usuario
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.sln.docstates
+
+# Secretos y configuraciones locales
+appsettings.Development.json
+UserSecretsId
+.env
+.env.*
+!.env.example
+
+# Archivos de publicación
+publish/
+*.pubxml
+
+# Docker y Base de Datos
+.dockerignore
+sql_data/
+db_backups/
+backups/
+*.bak
+
+# Extensiones temporales de VS y SO
+*.suo
+.DS_Store
+
