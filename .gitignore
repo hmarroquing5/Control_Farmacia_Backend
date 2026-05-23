@@ -2,32 +2,30 @@
 **/bin/
 **/obj/
 
-# Archivos de configuración de usuario
+# Configuración de IDEs
 .vs/
 .vscode/
 *.user
 *.userosscache
 *.sln.docstates
+*.suo
 
-# Secretos y configuraciones locales
-appsettings.Development.json
-UserSecretsId
+# Variables de entorno y secretos
 .env
 .env.*
 !.env.example
+
+appsettings.Development.json
 
 # Archivos de publicación
 publish/
 *.pubxml
 
-# Docker y Base de Datos
-.dockerignore
+# Docker y respaldos
 sql_data/
 db_backups/
 backups/
 *.bak
 
-# Extensiones temporales de VS y SO
-*.suo
+# Archivos del sistema operativo
 .DS_Store
-
