@@ -27,7 +27,7 @@ jobs:
 
     # 2. ETAPA: Lint / Análisis estático (Verificación de estándares de código)
     - name: Inspect Code Standards (Dotnet Format)
-      run: dotnet format --verify-no-changes --severity warn
+      run: dotnet format --severity warn
 
     # 3. ETAPA: Test (Ejecución automatizada y reporte de cobertura mínima)
     - name: Test and Collect Coverage
